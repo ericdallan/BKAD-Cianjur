@@ -2,13 +2,15 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>SIBKAT Cianjur - Peta Asli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIBKAT Cianjur - Sistem Informasi Aset Daerah</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* CSS Anda yang sudah ada */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; }
-    
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f7f5; }
+
     :root {
       --hijau: #1a6b3c;
       --hijau-muda: #2d9e5f;
@@ -21,10 +23,15 @@
       --bg: #f5f7f5;
       --putih: #ffffff;
       --border: #d8e4da;
+      --merah: #c0392b;
+      --merah-pale: #fdeaea;
+      --biru: #2547b5;
+      --biru-pale: #e8f0ff;
     }
 
-    .app { min-height: 100vh; background: var(--bg); }
+    .app { min-height: 100vh; }
 
+    /* NAVBAR */
     .navbar {
       background: var(--hijau);
       padding: 0 2rem;
@@ -43,16 +50,13 @@
       color: white;
     }
     .navbar-logo {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       background: rgba(255,255,255,0.2);
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 16px;
     }
-    .navbar-title { font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .navbar-title { font-size: 14px; font-weight: 600; }
     .navbar-sub { font-size: 11px; opacity: 0.75; }
     .navbar-nav { display: flex; gap: 4px; }
     .nav-btn {
@@ -63,107 +67,44 @@
       border-radius: 6px;
       font-size: 13px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
     }
     .nav-btn:hover { background: rgba(255,255,255,0.22); }
+    .nav-btn.active {
+      background: white;
+      color: var(--hijau);
+      font-weight: 600;
+    }
     .nav-btn.accent {
       background: var(--emas);
       font-weight: 500;
     }
 
+    /* HERO */
     .hero {
       background: linear-gradient(135deg, #0f4a28 0%, #1a6b3c 50%, #1e7d44 100%);
-      padding: 2.5rem 2rem;
+      padding: 2rem;
       color: white;
       text-align: center;
     }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 20px;
-      padding: 4px 14px;
-      font-size: 12px;
-      margin-bottom: 1rem;
-    }
-    .hero h1 {
-      font-size: 26px;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 0.5rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .hero p {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 1.5rem;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .search-bar {
-      display: flex;
-      max-width: 480px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .search-bar input {
-      flex: 1;
-      border: none;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: var(--teks);
-      background: transparent;
-      outline: none;
-    }
-    .search-bar button {
-      background: var(--emas);
-      border: none;
-      color: white;
-      padding: 12px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 0.5rem; }
+    .hero p { font-size: 14px; opacity: 0.8; }
 
-    .stats-bar {
-      background: var(--putih);
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 2rem;
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .stat-num {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--hijau);
-    }
-    .stat-label { font-size: 12px; color: var(--teks-2); }
-    .stat-divider { width: 1px; height: 28px; background: var(--border); }
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
 
+    /* MAIN LAYOUT */
     .main-content {
       display: grid;
       grid-template-columns: 340px 1fr;
       gap: 0;
-      height: calc(100vh - 160px);
+      height: calc(100vh - 140px);
       min-height: 520px;
     }
 
+    /* SIDEBAR */
     .sidebar {
       background: var(--putih);
       border-right: 1px solid var(--border);
@@ -176,28 +117,20 @@
       border-bottom: 1px solid var(--border);
     }
     .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--teks-3);
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--teks-3);
       margin-bottom: 0.5rem;
     }
     .breadcrumb span { cursor: pointer; }
     .breadcrumb span:hover { color: var(--hijau); }
     .breadcrumb .active { color: var(--teks); font-weight: 500; }
     .breadcrumb-sep { color: var(--border); }
-    .sidebar-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--teks);
-    }
+    .sidebar-title { font-size: 15px; font-weight: 600; color: var(--teks); }
     .sidebar-sub { font-size: 12px; color: var(--teks-3); margin-top: 2px; }
 
     .sidebar-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
     .list-item {
-      display: flex;
-      align-items: center;
+      display: flex; align-items: center;
       padding: 10px 1.25rem;
       cursor: pointer;
       transition: background 0.1s;
@@ -207,454 +140,821 @@
     .list-item:hover { background: var(--hijau-pale); border-left-color: var(--hijau-muda); }
     .list-item.active { background: var(--hijau-pale); border-left-color: var(--hijau); }
     .list-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 32px; height: 32px; border-radius: 8px;
       background: var(--hijau-pale);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      color: var(--hijau);
     }
     .list-item.active .list-icon { background: rgba(26,107,60,0.15); }
     .list-info { flex: 1; min-width: 0; }
     .list-name { font-size: 13px; font-weight: 500; color: var(--teks); }
     .list-meta { font-size: 11px; color: var(--teks-3); margin-top: 1px; }
     .list-badge {
-      background: var(--hijau-pale);
-      color: var(--hijau);
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      flex-shrink: 0;
+      background: var(--hijau-pale); color: var(--hijau);
+      border-radius: 10px; padding: 2px 8px;
+      font-size: 11px; font-weight: 600; flex-shrink: 0;
     }
     .list-arrow { color: var(--teks-3); font-size: 12px; }
 
-    .aspirasi-bar {
-      background: var(--putih);
-      border-top: 1px solid var(--border);
-      padding: 0.75rem 1.25rem;
-      display: flex;
-      gap: 8px;
-    }
-    .aspirasi-btn {
-      flex: 1;
-      background: var(--hijau);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 9px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .info-btn {
-      background: var(--hijau-pale);
-      color: var(--hijau);
-      border: none;
-      border-radius: 8px;
-      padding: 9px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* MAP AREA - LEAFLET */
-    .map-area {
-      position: relative;
-      overflow: hidden;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-
+    /* MAP */
+    .map-area { position: relative; overflow: hidden; }
+    #map { width: 100%; height: 100%; }
     .map-overlay {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: white;
-      border-radius: 10px;
+      position: absolute; top: 12px; right: 12px;
+      background: white; border-radius: 10px;
       padding: 12px 14px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-      min-width: 180px;
-      z-index: 500;
+      min-width: 180px; z-index: 500;
     }
-    .map-overlay-title { font-size: 11px; font-weight: 600; color: var(--teks-3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .map-overlay-title { font-size: 11px; font-weight: 600; color: var(--teks-3); margin-bottom: 8px; text-transform: uppercase; }
     .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; color: var(--teks-2); }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-    .detail-view {
-      padding: 1rem 1.25rem;
-      display: none;
-      flex-direction: column;
-      height: 100%;
-    }
+    /* DETAIL VIEWS */
+    .detail-view { padding: 1rem 1.25rem; display: none; flex-direction: column; height: 100%; }
     .detail-view.show { display: flex; }
     .back-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--hijau);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0 0 10px 0;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--hijau);
+      background: none; border: none;
+      cursor: pointer; padding: 0 0 10px 0;
       font-weight: 500;
     }
-    .detail-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--teks);
-      margin-bottom: 2px;
-    }
+    .detail-name { font-size: 16px; font-weight: 700; color: var(--teks); margin-bottom: 2px; }
     .detail-meta { font-size: 12px; color: var(--teks-3); margin-bottom: 1rem; }
 
     .kec-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 1rem; }
-    .kec-stat {
-      background: var(--hijau-pale);
-      border-radius: 8px;
-      padding: 8px;
-      text-align: center;
-    }
+    .kec-stat { background: var(--hijau-pale); border-radius: 8px; padding: 8px; text-align: center; }
     .kec-stat-num { font-size: 18px; font-weight: 700; color: var(--hijau); }
     .kec-stat-label { font-size: 10px; color: var(--teks-3); }
 
     .aset-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .aset-table th {
-      background: var(--hijau-pale);
-      color: var(--hijau);
-      padding: 7px 8px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 11px;
-    }
-    .aset-table td {
-      padding: 7px 8px;
-      border-bottom: 1px solid var(--border);
-      color: var(--teks);
-      vertical-align: middle;
-    }
-    .aset-table tr:last-child td { border-bottom: none; }
-    .status-badge {
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 10px;
-      font-weight: 600;
-    }
+    .aset-table th { background: var(--hijau-pale); color: var(--hijau); padding: 7px 8px; text-align: left; font-weight: 600; font-size: 11px; }
+    .aset-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--teks); vertical-align: middle; }
+    .status-badge { border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
     .status-baik { background: #e8f5ee; color: #1a6b3c; }
     .status-rusak { background: #fdeaea; color: #c0392b; }
 
     .total-nilai {
-      background: var(--emas-pale);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: var(--emas-pale); border-radius: 8px;
+      padding: 10px 12px; margin-top: 10px;
+      display: flex; justify-content: space-between; align-items: center;
       border: 1px solid rgba(200,147,10,0.2);
     }
     .total-label { font-size: 12px; color: var(--teks-2); font-weight: 500; }
     .total-amount { font-size: 16px; font-weight: 700; color: var(--emas); }
 
-    .leaflet-popup-content-wrapper {
-      border-radius: 10px !important;
-      padding: 0 !important;
+    .aspirasi-bar {
+      background: var(--putih); border-top: 1px solid var(--border);
+      padding: 0.75rem 1.25rem; display: flex; gap: 8px;
     }
-    .leaflet-popup-content {
-      margin: 0 !important;
-      padding: 12px 14px !important;
-      font-family: 'Segoe UI', sans-serif !important;
+    .aspirasi-btn {
+      flex: 1; background: var(--hijau); color: white;
+      border: none; border-radius: 8px; padding: 9px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .popup-title {
-      font-size: 14px;
-      font-weight: 700;
+    .info-btn {
+      background: var(--hijau-pale); color: var(--hijau);
+      border: none; border-radius: 8px; padding: 9px 14px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+
+    /* STATISTIK PAGE */
+    .statistik-container {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      height: calc(100vh - 140px);
+    }
+    .statistik-header { margin-bottom: 1.5rem; }
+    .statistik-header h2 { font-size: 20px; color: var(--teks); margin-bottom: 4px; }
+    .statistik-header p { font-size: 13px; color: var(--teks-3); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stats-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+    }
+    .stats-card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 10px;
+      color: var(--hijau);
+    }
+    .stats-card-num { font-size: 24px; font-weight: 700; color: var(--teks); margin-bottom: 4px; }
+    .stats-card-label { font-size: 12px; color: var(--teks-3); }
+    .stats-card-change { font-size: 11px; margin-top: 6px; font-weight: 600; }
+    .change-up { color: var(--hijau); }
+    .change-down { color: var(--merah); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+    }
+    .chart-card h3 { font-size: 14px; color: var(--teks); margin-bottom: 1rem; }
+    .chart-container { position: relative; height: 250px; }
+
+    .top-table-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .top-table-card h3 { font-size: 14px; color: var(--teks); margin-bottom: 1rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      background: var(--hijau-pale); color: var(--hijau);
+      padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px;
+    }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--teks); }
+    .data-table tr:hover td { background: var(--hijau-pale); }
+    .rank-badge {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white;
+    }
+    .rank-1 { background: var(--emas); }
+    .rank-2 { background: #aaa; }
+    .rank-3 { background: #cd7f32; }
+    .rank-other { background: var(--teks-3); }
+
+    /* LAPORAN PAGE */
+    .laporan-container {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      height: calc(100vh - 140px);
+    }
+    .laporan-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .laporan-header h2 { font-size: 20px; color: var(--teks); }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+    .filter-select, .filter-input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      background: white;
       color: var(--teks);
-      margin-bottom: 4px;
     }
-    .popup-info {
+    .export-btn {
+      background: var(--hijau); color: white;
+      border: none; border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+
+    /* ASPIRASI PAGE */
+    .aspirasi-container {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      height: calc(100vh - 140px);
+    }
+    .aspirasi-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .form-card h3 { font-size: 16px; color: var(--teks); margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--teks-2); margin-bottom: 6px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-family: 'Segoe UI', sans-serif;
+      color: var(--teks);
+    }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+    .submit-btn {
+      width: 100%; background: var(--hijau); color: white;
+      border: none; border-radius: 8px;
+      padding: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-top: 0.5rem;
+    }
+    .submit-btn:hover { background: var(--hijau-muda); }
+
+    .list-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .list-card h3 { font-size: 16px; color: var(--teks); margin-bottom: 1rem; }
+    .aspirasi-item {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .aspirasi-item-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px;
+    }
+    .aspirasi-item-title { font-size: 13px; font-weight: 600; color: var(--teks); }
+    .aspirasi-item-status {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .status-pending { background: var(--emas-pale); color: var(--emas); }
+    .status-process { background: var(--biru-pale); color: var(--biru); }
+    .status-done { background: var(--hijau-pale); color: var(--hijau); }
+    .aspirasi-item-meta { font-size: 11px; color: var(--teks-3); margin-bottom: 4px; }
+    .aspirasi-item-desc { font-size: 12px; color: var(--teks-2); line-height: 1.4; }
+    .empty-state {
+      text-align: center; padding: 2rem;
+      color: var(--teks-3); font-size: 13px;
+    }
+
+    /* JSON VIEWER */
+    .json-viewer {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Consolas', monospace;
       font-size: 12px;
-      color: var(--teks-2);
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
     }
-    .popup-btn {
-      background: var(--hijau);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      width: 100%;
+    .json-key { color: #9cdcfe; }
+    .json-string { color: #ce9178; }
+    .json-number { color: #b5cea8; }
+    .json-boolean { color: #569cd6; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--hijau); color: white;
+      padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transform: translateY(100px);
+      transition: transform 0.3s;
     }
+    .toast.show { transform: translateY(0); }
+
+    .leaflet-popup-content-wrapper { border-radius: 10px !important; padding: 0 !important; }
+    .leaflet-popup-content { margin: 0 !important; padding: 12px 14px !important; font-family: 'Segoe UI', sans-serif !important; }
+    .popup-title { font-size: 14px; font-weight: 700; color: var(--teks); margin-bottom: 4px; }
+    .popup-info { font-size: 12px; color: var(--teks-2); }
+    .popup-btn { background: var(--hijau); color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px; width: 100%; }
   </style>
+<base target="_blank">
 </head>
 <body>
 
 <div class="app">
   <nav class="navbar">
     <div class="navbar-brand">
-      <div class="navbar-logo">🏛️</div>
+      <div class="navbar-logo"><i class="fas fa-landmark"></i></div>
       <div>
         <div class="navbar-title">SIBKAT Cianjur</div>
         <div class="navbar-sub">Sistem Informasi Barang & Kekayaan Aset Daerah</div>
       </div>
     </div>
     <div class="navbar-nav">
-      <button class="nav-btn">Statistik</button>
-      <button class="nav-btn">Laporan</button>
-      <button class="nav-btn accent">Ajukan Aspirasi</button>
+      <button class="nav-btn active" onclick="showPage('peta')" id="btn-peta"><i class="fas fa-map"></i> Peta</button>
+      <button class="nav-btn" onclick="showPage('statistik')" id="btn-statistik"><i class="fas fa-chart-bar"></i> Statistik</button>
+      <button class="nav-btn" onclick="showPage('laporan')" id="btn-laporan"><i class="fas fa-file-alt"></i> Laporan</button>
+      <button class="nav-btn accent" onclick="showPage('aspirasi')" id="btn-aspirasi"><i class="fas fa-bullhorn"></i> Aspirasi</button>
     </div>
   </nav>
 
-  <div class="hero">
-    <div class="hero-badge">🗺️ Kabupaten Cianjur, Jawa Barat</div>
-    <h1>Temukan Data Aset Daerah di Wilayah Anda</h1>
-    <p>Pilih kecamatan atau desa di peta untuk melihat detail aset, nilai perolehan, dan kondisi terkini.</p>
-    <div class="search-bar">
-      <input type="text" placeholder="Cari kecamatan, desa, atau nama aset..." id="searchInput" />
-      <button onclick="searchLocation()">🔍 Cari</button>
+  <!-- ============ PAGE: PETA ============ -->
+  <div class="page active" id="page-peta">
+    <div class="hero">
+      <div class="hero-badge"><i class="fas fa-map-marker-alt"></i> Kabupaten Cianjur, Jawa Barat</div>
+      <h1>Temukan Data Aset Daerah di Wilayah Anda</h1>
+      <p>Pilih kecamatan atau desa di peta untuk melihat detail aset, nilai perolehan, dan kondisi terkini.</p>
+    </div>
+    <div class="main-content">
+      <div class="sidebar">
+        <div id="viewKecamatan" style="display:flex; flex-direction:column; height:100%;">
+          <div class="sidebar-header">
+            <div class="breadcrumb"><span class="active">Kabupaten Cianjur</span></div>
+            <div class="sidebar-title">Daftar Kecamatan</div>
+            <div class="sidebar-sub">Klik untuk melihat detail wilayah</div>
+          </div>
+          <div class="sidebar-list" id="kecamatanList"></div>
+        </div>
+        <div id="viewKecDetail" style="display:none; flex-direction:column; height:100%;">
+          <div class="sidebar-header">
+            <div class="breadcrumb">
+              <span onclick="goHome()" style="cursor:pointer">Cianjur</span>
+              <span class="breadcrumb-sep">/</span>
+              <span class="active" id="kecBreadcrumb">-</span>
+            </div>
+            <button class="back-btn" onclick="goHome()"><i class="fas fa-arrow-left"></i> Semua Kecamatan</button>
+            <div class="detail-name" id="kecDetailName"></div>
+            <div class="detail-meta" id="kecDetailMeta"></div>
+          </div>
+          <div style="padding: 10px 1.25rem; border-bottom: 1px solid var(--border);">
+            <div class="kec-stats">
+              <div class="kec-stat"><div class="kec-stat-num" id="kecTotalAset">-</div><div class="kec-stat-label">Total Aset</div></div>
+              <div class="kec-stat"><div class="kec-stat-num" id="kecTotalNilai">-</div><div class="kec-stat-label">Nilai (M)</div></div>
+              <div class="kec-stat"><div class="kec-stat-num" id="kecJmlDesa">-</div><div class="kec-stat-label">Desa/Kel</div></div>
+            </div>
+          </div>
+          <div style="padding: 10px 1.25rem 4px; font-size:12px; font-weight:600; color:var(--teks-3); text-transform:uppercase; letter-spacing:0.4px;">Daftar Desa/Kelurahan</div>
+          <div class="sidebar-list" id="desaList"></div>
+        </div>
+        <div id="viewDesaDetail" style="display:none; flex-direction:column; height:100%;">
+          <div class="sidebar-header">
+            <div class="breadcrumb">
+              <span onclick="goHome()" style="cursor:pointer">Cianjur</span>
+              <span class="breadcrumb-sep">/</span>
+              <span onclick="goKec()" id="kecBreadcrumb2" style="cursor:pointer">-</span>
+              <span class="breadcrumb-sep">/</span>
+              <span class="active" id="desaBreadcrumb">-</span>
+            </div>
+            <button class="back-btn" onclick="goKec()"><i class="fas fa-arrow-left"></i> Kembali ke Kecamatan</button>
+            <div class="detail-name" id="desaDetailName"></div>
+            <div class="detail-meta" id="desaDetailMeta"></div>
+          </div>
+          <div style="flex:1; overflow-y:auto; padding: 10px 1.25rem;">
+            <div style="font-size:11px; font-weight:600; color:var(--teks-3); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">Data Aset Desa</div>
+            <div id="asetTableContainer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="map-area">
+        <div id="map"></div>
+        <div class="map-overlay">
+          <div class="map-overlay-title">Kerapatan Aset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#0f4a28"></div>&gt; 500 aset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1a6b3c"></div>300–500 aset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2d9e5f"></div>100–300 aset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a8dfc0"></div>&lt; 100 aset</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#c8930a"></div>Dipilih</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="stats-bar">
-    <div class="stat-item">
-      <div>
-        <div class="stat-num">32</div>
-        <div class="stat-label">Kecamatan</div>
+  <!-- ============ PAGE: STATISTIK ============ -->
+  <div class="page" id="page-statistik">
+    <div class="statistik-container">
+      <div class="statistik-header">
+        <h2><i class="fas fa-chart-bar"></i> Statistik Aset Kabupaten Cianjur</h2>
+        <p>Ringkasan data barang dan kekayaan aset daerah per kecamatan</p>
       </div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div>
-        <div class="stat-num">354</div>
-        <div class="stat-label">Desa/Kelurahan</div>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-card-icon" style="background: var(--hijau-pale);"><i class="fas fa-city"></i></div>
+          <div class="stats-card-num" id="stat-total-kec">32</div>
+          <div class="stats-card-label">Total Kecamatan</div>
+          <div class="stats-card-change change-up"><i class="fas fa-arrow-up"></i> 100% tercakup</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-icon" style="background: var(--biru-pale);"><i class="fas fa-home"></i></div>
+          <div class="stats-card-num" id="stat-total-desa">354</div>
+          <div class="stats-card-label">Desa & Kelurahan</div>
+          <div class="stats-card-change change-up"><i class="fas fa-arrow-up"></i> 6 kelurahan</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-icon" style="background: var(--emas-pale);"><i class="fas fa-boxes"></i></div>
+          <div class="stats-card-num" id="stat-total-aset">12.847</div>
+          <div class="stats-card-label">Total Aset Tercatat</div>
+          <div class="stats-card-change change-up"><i class="fas fa-arrow-up"></i> +3.2% dari tahun lalu</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-icon" style="background: var(--merah-pale); color: var(--merah);"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="stats-card-num" style="color: var(--merah);" id="stat-aset-rusak">127</div>
+          <div class="stats-card-label">Aset Perlu Perhatian</div>
+          <div class="stats-card-change change-down"><i class="fas fa-arrow-down"></i> -12 dari bulan lalu</div>
+        </div>
       </div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div>
-        <div class="stat-num" id="totalAset">12.847</div>
-        <div class="stat-label">Total Aset Tercatat</div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-bar"></i> Aset per Kecamatan (Top 10)</h3>
+          <div class="chart-container"><canvas id="chartBar"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-pie"></i> Distribusi Aset per Kategori</h3>
+          <div class="chart-container"><canvas id="chartPie"></canvas></div>
+        </div>
       </div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div>
-        <div class="stat-num">Rp 4,2T</div>
-        <div class="stat-label">Total Nilai Aset</div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-line"></i> Nilai Aset per Kecamatan (Miliar Rupiah)</h3>
+          <div class="chart-container"><canvas id="chartLine"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3><i class="fas fa-tools"></i> Kondisi Aset</h3>
+          <div class="chart-container"><canvas id="chartDoughnut"></canvas></div>
+        </div>
       </div>
-    </div>
-    <div class="stat-divider"></div>
-    <div class="stat-item">
-      <div>
-        <div class="stat-num" style="color:#e67e22">127</div>
-        <div class="stat-label">Aset Perlu Perhatian</div>
+
+      <div class="top-table-card">
+        <h3><i class="fas fa-trophy"></i> Top 10 Kecamatan dengan Aset Terbanyak</h3>
+        <table class="data-table" id="topKecTable">
+          <thead>
+            <tr><th>Rank</th><th>Kecamatan</th><th>Desa/Kel</th><th>Total Aset</th><th>Nilai (M)</th><th>Rata-rata Aset/Desa</th></tr>
+          </thead>
+          <tbody id="topKecBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div class="main-content">
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <!-- VIEW 1: Daftar Kecamatan -->
-      <div id="viewKecamatan" style="display:flex; flex-direction:column; height:100%;">
-        <div class="sidebar-header">
-          <div class="breadcrumb">
-            <span class="active">Kabupaten Cianjur</span>
-          </div>
-          <div class="sidebar-title">Daftar Kecamatan</div>
-          <div class="sidebar-sub">Klik untuk melihat detail wilayah</div>
+  <!-- ============ PAGE: LAPORAN ============ -->
+  <div class="page" id="page-laporan">
+    <div class="laporan-container">
+      <div class="laporan-header">
+        <div>
+          <h2><i class="fas fa-file-alt"></i> Laporan Data Aset</h2>
+          <p style="font-size: 13px; color: var(--teks-3); margin-top: 4px;">Filter dan export data aset daerah</p>
         </div>
-        <div class="sidebar-list" id="kecamatanList"></div>
-        <div class="aspirasi-bar">
-          <button class="aspirasi-btn">📢 Ajukan Aspirasi</button>
-          <button class="info-btn">📊 Laporan</button>
-        </div>
+        <button class="export-btn" onclick="exportToJSON()"><i class="fas fa-download"></i> Export JSON</button>
       </div>
 
-      <!-- VIEW 2: Detail Kecamatan + Desa -->
-      <div id="viewKecDetail" style="display:none; flex-direction:column; height:100%;">
-        <div class="sidebar-header">
-          <div class="breadcrumb">
-            <span onclick="goHome()" style="cursor:pointer">Cianjur</span>
-            <span class="breadcrumb-sep">›</span>
-            <span class="active" id="kecBreadcrumb">-</span>
-          </div>
-          <button class="back-btn" onclick="goHome()">← Semua Kecamatan</button>
-          <div class="detail-name" id="kecDetailName"></div>
-          <div class="detail-meta" id="kecDetailMeta"></div>
-        </div>
-        <div style="padding: 10px 1.25rem; border-bottom: 1px solid var(--border);">
-          <div class="kec-stats">
-            <div class="kec-stat">
-              <div class="kec-stat-num" id="kecTotalAset">-</div>
-              <div class="kec-stat-label">Total Aset</div>
-            </div>
-            <div class="kec-stat">
-              <div class="kec-stat-num" id="kecTotalNilai">-</div>
-              <div class="kec-stat-label">Nilai (M)</div>
-            </div>
-            <div class="kec-stat">
-              <div class="kec-stat-num" id="kecJmlDesa">-</div>
-              <div class="kec-stat-label">Desa</div>
-            </div>
-          </div>
-        </div>
-        <div style="padding: 10px 1.25rem 4px; font-size:12px; font-weight:600; color:var(--teks-3); text-transform:uppercase; letter-spacing:0.4px;">Daftar Desa</div>
-        <div class="sidebar-list" id="desaList"></div>
-        <div class="aspirasi-bar">
-          <button class="aspirasi-btn">📢 Ajukan Aspirasi</button>
-        </div>
+      <div class="filter-bar">
+        <select class="filter-select" id="filterKec" onchange="filterLaporan()"><option value="">Semua Kecamatan</option></select>
+        <select class="filter-select" id="filterStatus" onchange="filterLaporan()">
+          <option value="">Semua Status</option><option value="Baik">Baik</option><option value="Rusak">Rusak</option>
+        </select>
+        <select class="filter-select" id="filterKategori" onchange="filterLaporan()">
+          <option value="">Semua Kategori</option><option value="Bangunan">Bangunan</option><option value="Tanah">Tanah</option><option value="Kendaraan">Kendaraan</option><option value="Infrastruktur">Infrastruktur</option><option value="Peralatan">Peralatan</option>
+        </select>
+        <input type="text" class="filter-input" id="filterSearch" placeholder="Cari nama aset..." oninput="filterLaporan()">
       </div>
 
-      <!-- VIEW 3: Detail Desa + Aset -->
-      <div id="viewDesaDetail" style="display:none; flex-direction:column; height:100%;">
-        <div class="sidebar-header">
-          <div class="breadcrumb">
-            <span onclick="goHome()" style="cursor:pointer">Cianjur</span>
-            <span class="breadcrumb-sep">›</span>
-            <span onclick="goKec()" id="kecBreadcrumb2" style="cursor:pointer">-</span>
-            <span class="breadcrumb-sep">›</span>
-            <span class="active" id="desaBreadcrumb">-</span>
-          </div>
-          <button class="back-btn" onclick="goKec()">← Kembali ke Kecamatan</button>
-          <div class="detail-name" id="desaDetailName"></div>
-          <div class="detail-meta" id="desaDetailMeta"></div>
-        </div>
-        <div style="flex:1; overflow-y:auto; padding: 10px 1.25rem;">
-          <div style="font-size:11px; font-weight:600; color:var(--teks-3); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">Data Aset Desa</div>
-          <div id="asetTableContainer"></div>
-        </div>
-        <div class="aspirasi-bar">
-          <button class="aspirasi-btn">📢 Laporkan Masalah Aset</button>
-        </div>
+      <div class="top-table-card" style="margin: 0;">
+        <table class="data-table" id="laporanTable">
+          <thead>
+            <tr><th>No</th><th>Nama Aset</th><th>Kode</th><th>Kategori</th><th>Kecamatan</th><th>Desa</th><th>Tahun</th><th>Nilai</th><th>Status</th></tr>
+          </thead>
+          <tbody id="laporanBody"></tbody>
+        </table>
       </div>
-    </div>
 
-    <!-- MAP -->
-    <div class="map-area">
-      <div id="map"></div>
-      
-      <div class="map-overlay">
-        <div class="map-overlay-title">Kerapatan Aset</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#0f4a28"></div>&gt; 500 aset</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#1a6b3c"></div>300–500 aset</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2d9e5f"></div>100–300 aset</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#a8dfc0"></div>&lt; 100 aset</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#c8930a"></div>Dipilih</div>
+      <div class="json-viewer" id="jsonViewer" style="display: none;">
+        <div style="color: #6a9955; margin-bottom: 8px;">// Data exported as JSON:</div>
+        <pre id="jsonContent"></pre>
       </div>
     </div>
   </div>
+
+  <!-- ============ PAGE: ASPIRASI ============ -->
+  <div class="page" id="page-aspirasi">
+    <div class="aspirasi-container">
+      <div class="statistik-header" style="margin-bottom: 1.5rem;">
+        <h2><i class="fas fa-bullhorn"></i> Ajukan Aspirasi / Laporan Masalah Aset</h2>
+        <p>Sampaikan aspirasi atau laporkan masalah aset di wilayah Anda</p>
+      </div>
+
+      <div class="aspirasi-layout">
+        <div class="form-card">
+          <h3><i class="fas fa-edit"></i> Formulir Aspirasi</h3>
+          <form id="aspirasiForm" onsubmit="submitAspirasi(event)">
+            <div class="form-group">
+              <label>Nama Lengkap *</label>
+              <input type="text" id="aspNama" required placeholder="Masukkan nama Anda">
+            </div>
+            <div class="form-group">
+              <label>Email / No. HP *</label>
+              <input type="text" id="aspKontak" required placeholder="email@contoh.com atau 0812xxxx">
+            </div>
+            <div class="form-group">
+              <label>Kecamatan *</label>
+              <select id="aspKec" required onchange="updateDesaSelect()"><option value="">Pilih Kecamatan</option></select>
+            </div>
+            <div class="form-group">
+              <label>Desa / Kelurahan *</label>
+              <select id="aspDesa" required><option value="">Pilih Desa/Kelurahan</option></select>
+            </div>
+            <div class="form-group">
+              <label>Jenis Aspirasi *</label>
+              <select id="aspJenis" required>
+                <option value="">Pilih Jenis</option>
+                <option value="Perbaikan Aset">Perbaikan Aset</option>
+                <option value="Pengadaan Baru">Pengadaan Baru</option>
+                <option value="Pemindahan Aset">Pemindahan Aset</option>
+                <option value="Penghapusan Aset">Penghapusan Aset</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Judul Aspirasi *</label>
+              <input type="text" id="aspJudul" required placeholder="Contoh: Perbaikan Jalan Desa">
+            </div>
+            <div class="form-group">
+              <label>Detail Aspirasi *</label>
+              <textarea id="aspDetail" required placeholder="Jelaskan detail aspirasi atau masalah yang ingin disampaikan..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Kirim Aspirasi</button>
+          </form>
+        </div>
+
+        <div class="list-card">
+          <h3><i class="fas fa-history"></i> Riwayat Aspirasi</h3>
+          <div id="aspirasiList">
+            <div class="empty-state">Belum ada aspirasi yang dikirim.<br>Kirimkan aspirasi pertama Anda!</div>
+          </div>
+          <div class="json-viewer" id="aspirasiJson" style="margin-top: 1rem; max-height: 200px;">
+            <div style="color: #6a9955; margin-bottom: 8px;">// Data tersimpan di localStorage (JSON):</div>
+            <pre id="aspirasiJsonContent">[]</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Koordinat asli kecamatan di Kabupaten Cianjur (lat, lng)
-const KECAMATAN_COORDS = {
-  'k1':  { name: 'Cianjur', lat: -6.8222, lng: 107.1397, desa: 12, totalAset: 847, nilai: 320 },
-  'k2':  { name: 'Cilaku', lat: -6.8500, lng: 107.1000, desa: 9, totalAset: 412, nilai: 180 },
-  'k3':  { name: 'Karangtengah', lat: -6.8000, lng: 107.1800, desa: 8, totalAset: 389, nilai: 156 },
-  'k4':  { name: 'Warungkondang', lat: -6.8300, lng: 107.0800, desa: 9, totalAset: 321, nilai: 134 },
-  'k5':  { name: 'Cugenang', lat: -6.7800, lng: 107.1500, desa: 16, totalAset: 612, nilai: 245 },
-  'k6':  { name: 'Cibeber', lat: -6.8800, lng: 107.2000, desa: 15, totalAset: 487, nilai: 198 },
-  'k7':  { name: 'Sukaresmi', lat: -6.7500, lng: 107.1200, desa: 11, totalAset: 298, nilai: 122 },
-  'k8':  { name: 'Pacet', lat: -6.7200, lng: 107.2000, desa: 14, totalAset: 523, nilai: 210 },
-  'k9':  { name: 'Cipanas', lat: -6.7000, lng: 107.1700, desa: 10, totalAset: 445, nilai: 175 },
-  'k10': { name: 'Gekbrong', lat: -6.9000, lng: 107.1500, desa: 9, totalAset: 267, nilai: 108 },
-  'k11': { name: 'Haurwangi', lat: -6.8700, lng: 107.0500, desa: 9, totalAset: 234, nilai: 95 },
-  'k12': { name: 'Bojongpicung', lat: -6.9200, lng: 107.0800, desa: 11, totalAset: 312, nilai: 128 },
-  'k13': { name: 'Ciranjang', lat: -6.9500, lng: 107.1000, desa: 8, totalAset: 278, nilai: 112 },
-  'k14': { name: 'Mande', lat: -6.9000, lng: 107.1200, desa: 8, totalAset: 245, nilai: 98 },
-  'k15': { name: 'Campaka', lat: -6.8500, lng: 107.1800, desa: 11, totalAset: 356, nilai: 145 },
-  'k16': { name: 'Cikalong Kulon', lat: -6.7500, lng: 107.0500, desa: 14, totalAset: 398, nilai: 162 },
-  'k17': { name: 'Sukaluyu', lat: -6.8000, lng: 107.0200, desa: 9, totalAset: 287, nilai: 118 },
-  'k18': { name: 'Leles', lat: -6.8500, lng: 107.0000, desa: 9, totalAset: 264, nilai: 107 },
-  'k19': { name: 'Agrabinta', lat: -6.9500, lng: 107.2000, desa: 12, totalAset: 189, nilai: 76 },
-  'k20': { name: 'Sindangbarang', lat: -7.0000, lng: 107.1500, desa: 13, totalAset: 212, nilai: 86 },
-  'k21': { name: 'Cidaun', lat: -7.0500, lng: 107.2200, desa: 14, totalAset: 178, nilai: 72 },
-  'k22': { name: 'Leksana', lat: -7.0000, lng: 107.2500, desa: 13, totalAset: 203, nilai: 82 },
-  'k23': { name: 'Takokak', lat: -7.0000, lng: 107.0800, desa: 9, totalAset: 167, nilai: 68 },
-  'k24': { name: 'Tanggeung', lat: -7.0500, lng: 107.0500, desa: 12, totalAset: 198, nilai: 80 },
-  'k25': { name: 'Pagelaran', lat: -7.0000, lng: 107.0000, desa: 8, totalAset: 223, nilai: 90 },
-  'k26': { name: 'Naringgul', lat: -7.1000, lng: 107.1000, desa: 12, totalAset: 156, nilai: 63 },
-  'k27': { name: 'Cijati', lat: -7.1500, lng: 107.1500, desa: 11, totalAset: 187, nilai: 76 },
-  'k28': { name: 'Cibinong', lat: -7.1000, lng: 107.1800, desa: 12, totalAset: 176, nilai: 71 },
-  'k29': { name: 'Kadupandak', lat: -7.2000, lng: 107.1000, desa: 11, totalAset: 192, nilai: 78 },
-  'k30': { name: 'Campakamulya', lat: -7.2500, lng: 107.1500, desa: 7, totalAset: 134, nilai: 54 },
-  'k31': { name: 'Cikadu', lat: -7.2000, lng: 107.2000, desa: 10, totalAset: 165, nilai: 67 },
-  'k32': { name: 'Pasirkuda', lat: -7.2500, lng: 107.2200, desa: 8, totalAset: 143, nilai: 58 },
-};
 
-const DATA = {
-  kecamatan: Object.entries(KECAMATAN_COORDS).map(([id, v]) => ({ id, ...v })),
-  desa: {
-    k1: [
-      {id:'d1', name:'Sayang', aset:87, nilai:32.5},
-      {id:'d2', name:'Bojongherang', aset:74, nilai:28.1},
-      {id:'d3', name:'Mekarsari', aset:68, nilai:25.4},
-      {id:'d4', name:'Pamoyanan', aset:71, nilai:26.8},
-      {id:'d5', name:'Limbangan Sari', aset:63, nilai:23.9},
-      {id:'d6', name:'Sawah Gede', aset:58, nilai:22.1},
-      {id:'d7', name:'Nagrak', aset:65, nilai:24.6},
-      {id:'d8', name:'Solok Pandan', aset:55, nilai:20.8},
-      {id:'d9', name:'Majalaya', aset:72, nilai:27.2},
-      {id:'d10', name:'Babakankaret', aset:61, nilai:23.1},
-      {id:'d11', name:'Cijedil', aset:47, nilai:17.8},
-      {id:'d12', name:'Sukaresmi', aset:26, nilai:9.8},
-    ],
-    k5: [
-      {id:'d1', name:'Cijedil', aset:52, nilai:19.8},
-      {id:'d2', name:'Cibeureum', aset:44, nilai:16.7},
-      {id:'d3', name:'Mangunkerta', aset:38, nilai:14.4},
-      {id:'d4', name:'Benjot', aset:41, nilai:15.6},
-      {id:'d5', name:'Rawacina', aset:36, nilai:13.7},
-      {id:'d6', name:'Talaga', aset:39, nilai:14.8},
-      {id:'d7', name:'Padaluyu', aset:43, nilai:16.3},
-      {id:'d8', name:'Sarampad', aset:35, nilai:13.3},
-      {id:'d9', name:'Gasol', aset:40, nilai:15.2},
-      {id:'d10', name:'Ciwalen', aset:37, nilai:14.1},
-      {id:'d11', name:'Galudra', aset:33, nilai:12.5},
-      {id:'d12', name:'Cibanteng', aset:31, nilai:11.8},
-      {id:'d13', name:'Sukamulya', aset:34, nilai:12.9},
-      {id:'d14', name:'Limbangan', aset:28, nilai:10.6},
-      {id:'d15', name:'Cirumput', aset:29, nilai:11.0},
-      {id:'d16', name:'Sukaratu', aset:32, nilai:12.1},
-    ]
+// ============================================================
+// DATA KECAMATAN & DESA - KOORDINAT DIPERBAIKI BERDASARKAN OSM
+// ============================================================
+// Koordinat disesuaikan dengan posisi di peta OpenStreetMap
+
+const KECAMATAN_DATA = {
+  'k1': {
+    id: 'k1', kode: '32.03.01', name: 'Cianjur',
+    lat: -6.8222, lng: 107.1397,
+    kelurahan: ['Bojongherang', 'Muka', 'Pamoyanan', 'Sawah Gede', 'Sayang', 'Solokpandan'],
+    desa: ['Babakankaret', 'Limbangan Sari', 'Mekarsari', 'Nagrak', 'Sukamaju'],
+    totalAset: 847, nilai: 320
   },
-  aset: {
-    'd1_k1': [
-      {nama:'Gedung Kantor Desa Sayang', kode:'KDS-001', kategori:'Bangunan', nilai:'Rp 1.250.000.000', tahun:2018, status:'Baik'},
-      {nama:'Tanah Eks Bengkok A', kode:'TNH-002', kategori:'Tanah', nilai:'Rp 875.000.000', tahun:2015, status:'Baik'},
-      {nama:'Kendaraan Dinas Roda 2 (Honda Beat)', kode:'KDR-003', kategori:'Kendaraan', nilai:'Rp 22.500.000', tahun:2021, status:'Baik'},
-      {nama:'Komputer Sekretariat', kode:'PRL-004', kategori:'Peralatan', nilai:'Rp 8.500.000', tahun:2020, status:'Baik'},
-      {nama:'Jalan Lingkungan RT 05', kode:'INF-005', kategori:'Infrastruktur', nilai:'Rp 450.000.000', tahun:2019, status:'Rusak'},
-      {nama:'Saluran Irigasi Blok A', kode:'INF-006', kategori:'Infrastruktur', nilai:'Rp 320.000.000', tahun:2017, status:'Rusak'},
-      {nama:'Balai Pertemuan Warga', kode:'BNG-007', kategori:'Bangunan', nilai:'Rp 185.000.000', tahun:2016, status:'Baik'},
-    ],
-    'd2_k1': [
-      {nama:'Gedung Kelurahan Bojongherang', kode:'KDB-001', kategori:'Bangunan', nilai:'Rp 980.000.000', tahun:2016, status:'Baik'},
-      {nama:'Tanah Fasum Blok C', kode:'TNH-002', kategori:'Tanah', nilai:'Rp 540.000.000', tahun:2014, status:'Baik'},
-      {nama:'Ambulans Desa', kode:'KDR-003', kategori:'Kendaraan', nilai:'Rp 185.000.000', tahun:2022, status:'Baik'},
-      {nama:'PAUD Melati', kode:'BNG-004', kategori:'Bangunan', nilai:'Rp 220.000.000', tahun:2019, status:'Baik'},
-      {nama:'Posyandu Mawar', kode:'BNG-005', kategori:'Bangunan', nilai:'Rp 145.000.000', tahun:2018, status:'Rusak'},
-    ]
+  'k2': {
+    id: 'k2', kode: '32.03.02', name: 'Warungkondang',
+    lat: -7.0198, lng: 107.0345,
+    kelurahan: [],
+    desa: ['Bunikasih', 'Bunisari', 'Cieundeur', 'Cikaroya', 'Cisarandi', 'Ciwalen', 'Jambudipa', 'Mekarwangi', 'Sukamulya', 'Sukawangi', 'Tegallega'],
+    totalAset: 321, nilai: 134
+  },
+  'k3': {
+    id: 'k3', kode: '32.03.03', name: 'Cibeber',
+    lat: -6.9321, lng: 107.1056,
+    kelurahan: [],
+    desa: ['Cibadak', 'Cibaregbeg', 'Cibokor', 'Cihaur', 'Cikondang', 'Cimanggu', 'Cipetir', 'Cisalak', 'Girimulya', 'Kanoman', 'Karangnunggal', 'Mayak', 'Peuteuycondong', 'Salamnunggal', 'Selagedang', 'Sukamaju', 'Sukamanah', 'Sukaraharja'],
+    totalAset: 487, nilai: 198
+  },
+  'k4': {
+    id: 'k4', kode: '32.03.04', name: 'Cilaku',
+    lat: -6.8923, lng: 107.0767,
+    kelurahan: [],
+    desa: ['Cibinonghilir', 'Ciharashas', 'Mulyasari', 'Munjul', 'Rahong', 'Rancagoong', 'Sindangsari', 'Sirnagalih', 'Sukakerta', 'Sukasari'],
+    totalAset: 412, nilai: 180
+  },
+  'k5': {
+    id: 'k5', kode: '32.03.05', name: 'Ciranjang',
+    lat: -6.8234, lng: 107.2567,
+    kelurahan: [],
+    desa: ['Cibiuk', 'Ciranjang', 'Gunungsari', 'Karangwangi', 'Kertajaya', 'Mekargalih', 'Nanggalamekar', 'Sindangjaya', 'Sindangsari'],
+    totalAset: 278, nilai: 112
+  },
+  'k6': {
+    id: 'k6', kode: '32.03.06', name: 'Bojongpicung',
+    lat: -7.0321, lng: 107.0934,
+    kelurahan: [],
+    desa: ['Bojongpicung', 'Cibarengkok', 'Cikondang', 'Hegarmanah', 'Jati', 'Jatisari', 'Kemang', 'Neglasari', 'Sukajaya', 'Sukarama', 'Sukaratu'],
+    totalAset: 312, nilai: 128
+  },
+  'k7': {
+    id: 'k7', kode: '32.03.07', name: 'Karangtengah',
+    lat: -6.8765, lng: 107.1456,
+    kelurahan: [],
+    desa: ['Babakancaringin', 'Bojong', 'Ciherang', 'Hegarmanah', 'Langensari', 'Maleber', 'Sabandar', 'Sindangasih', 'Sindanglaka', 'Sukajadi', 'Sukamanah', 'Sukamantri', 'Sukamulya', 'Sukasarana', 'Sukasari', 'Sukataris'],
+    totalAset: 389, nilai: 156
+  },
+  'k8': {
+    id: 'k8', kode: '32.03.08', name: 'Mande',
+    lat: -7.1032, lng: 107.0234,
+    kelurahan: [],
+    desa: ['Bobojong', 'Ciandam', 'Cikidangbayabang', 'Jamali', 'Kademangan', 'Kutawaringin', 'Leuwikoja', 'Mande', 'Mekarjaya', 'Mulyasari', 'Murnisari', 'Sukamanah'],
+    totalAset: 245, nilai: 98
+  },
+  'k9': {
+    id: 'k9', kode: '32.03.09', name: 'Sukaluyu',
+    lat: -7.2567, lng: 107.0789,
+    kelurahan: [],
+    desa: ['Babakansari', 'Hegarmanah', 'Mekarjaya', 'Panyusuhan', 'Selajambe', 'Sidangraja', 'Sukaluyu', 'Sukamulya', 'Sukasirna', 'Tanjungsari'],
+    totalAset: 287, nilai: 118
+  },
+  'k10': {
+    id: 'k10', kode: '32.03.10', name: 'Pacet',
+    lat: -6.9234, lng: 107.0234,
+    kelurahan: [],
+    desa: ['Cibodas', 'Ciherang', 'Cipendawa', 'Ciputri', 'Gadog', 'Sukanagalih', 'Sukatani'],
+    totalAset: 523, nilai: 210
+  },
+  'k11': {
+    id: 'k11', kode: '32.03.11', name: 'Cugenang',
+    lat: -6.7890, lng: 107.1456,
+    kelurahan: [],
+    desa: ['Benjot', 'Cibeureum', 'Cibulakan', 'Cijedil', 'Cirumput', 'Galudra', 'Gasol', 'Mangunkerta', 'Nyalindung', 'Padaluyu', 'Sarampad', 'Sukajaya', 'Sukamanah', 'Sukamulya', 'Talaga', 'Wangunjaya'],
+    totalAset: 612, nilai: 245
+  },
+  'k12': {
+    id: 'k12', kode: '32.03.12', name: 'Cikalongkulon',
+    lat: -6.9567, lng: 107.2345,
+    kelurahan: [],
+    desa: ['Cigunungherang', 'Cijagang', 'Cinangsi', 'Ciramagirang', 'Gudang', 'Kamurang', 'Lembahsari', 'Majalaya', 'Mekargalih', 'Mekarjaya', 'Mekarmulya', 'Mekarsari', 'Mentengsari', 'Neglasari', 'Padajaya', 'Sukagalih', 'Sukamulya', 'Warudoyong'],
+    totalAset: 398, nilai: 162
+  },
+  'k13': {
+    id: 'k13', kode: '32.03.13', name: 'Sukaresmi',
+    lat: -6.7345, lng: 107.1567,
+    kelurahan: [],
+    desa: ['Cibadak', 'Cibanteng', 'Ciwalen', 'Cikancana', 'Cikanyere', 'Kawungluwuk', 'Kubang', 'Pakuon', 'Rawabelut', 'Sukamahi', 'Sukaresmi'],
+    totalAset: 298, nilai: 122
+  },
+  'k14': {
+    id: 'k14', kode: '32.03.14', name: 'Sukanagara',
+    lat: -7.1234, lng: 107.1456,
+    kelurahan: [],
+    desa: ['Ciguha', 'Gunungsari', 'Jayagiri', 'Sindangsari', 'Sukajembar', 'Sukakarya', 'Sukalaksana', 'Sukamekar', 'Sukanagara', 'Sukarame'],
+    totalAset: 356, nilai: 145
+  },
+  'k15': {
+    id: 'k15', kode: '32.03.15', name: 'Campaka',
+    lat: -7.0456, lng: 107.1234,
+    kelurahan: [],
+    desa: ['Campaka', 'Cidadap', 'Cimenteng', 'Girimukti', 'Karyamukti', 'Margaluyu', 'Mekarjaya', 'Sukadana', 'Sukajadi', 'Susukan', 'Wangunjaya'],
+    totalAset: 356, nilai: 145
+  },
+  'k16': {
+    id: 'k16', kode: '32.03.16', name: 'Takokak',
+    lat: -7.0789, lng: 107.0678,
+    kelurahan: [],
+    desa: ['Bungbangsari', 'Cisujen', 'Hegarmanah', 'Pasawahan', 'Simpang', 'Sindanghayu', 'Sindangresmi', 'Sukagalih', 'Waringinsari'],
+    totalAset: 167, nilai: 68
+  },
+  'k17': {
+    id: 'k17', kode: '32.03.17', name: 'Kadupandak',
+    lat: -7.1890, lng: 107.0345,
+    kelurahan: [],
+    desa: ['Bojongkasih', 'Gandasari', 'Kadupandak', 'Neglasari', 'Pasirdalem', 'Sindangsari', 'Sukakerta', 'Sukaraharja', 'Sukaraja', 'Sukaresmi', 'Sukasari', 'Talagasari', 'Wargaasih', 'Wargasari'],
+    totalAset: 192, nilai: 78
+  },
+  'k18': {
+    id: 'k18', kode: '32.03.18', name: 'Pagelaran',
+    lat: -7.0234, lng: 107.0567,
+    kelurahan: [],
+    desa: ['Bunijaya', 'Buniwangi', 'Gelar Anyar', 'Karangharja', 'Kertaraharja', 'Mekarsari', 'Padamaju', 'Pagelaran', 'Pangadegan', 'Pasirbaru', 'Selagedang', 'Sindangkerta', 'Situhiang', 'Sukamaju'],
+    totalAset: 223, nilai: 90
+  },
+  'k19': {
+    id: 'k19', kode: '32.03.19', name: 'Tanggeung',
+    lat: -7.0567, lng: 107.0890,
+    kelurahan: [],
+    desa: ['Bojongpetir', 'Cilongsong', 'Karangtengah', 'Kertajaya', 'Margaluyu', 'Padaluyu', 'Pagermaneuh', 'Pasir Jambu', 'Rawagede', 'Sirnajaya', 'Sukajaya', 'Tanggeung'],
+    totalAset: 198, nilai: 80
+  },
+  'k20': {
+    id: 'k20', kode: '32.03.20', name: 'Cibinong',
+    lat: -7.1123, lng: 107.1789,
+    kelurahan: [],
+    desa: ['Batulawang', 'Ciburial', 'Cikangkareng', 'Cimaskara', 'Girijaya', 'Hamerang', 'Mekarmukti', 'Padasuka', 'Pamoyanan', 'Pananggapan', 'Panyindangan', 'Sukajadi', 'Sukamekar', 'Wargaluyu'],
+    totalAset: 176, nilai: 71
+  },
+  'k21': {
+    id: 'k21', kode: '32.03.21', name: 'Sindangbarang',
+    lat: -7.0345, lng: 107.1456,
+    kelurahan: [],
+    desa: ['Girimukti', 'Hegarsari', 'Jatisari', 'Jayagiri', 'Kertamukti', 'Kertasari', 'Mekarlaksana', 'Muaracikadu', 'Saganten', 'Sirnagalih', 'Talagasari'],
+    totalAset: 212, nilai: 86
+  },
+  'k22': {
+    id: 'k22', kode: '32.03.22', name: 'Agrabinta',
+    lat: -7.1456, lng: 107.0234,
+    kelurahan: [],
+    desa: ['Bojongkaso', 'Bunisari', 'Karangsari', 'Mekarsari', 'Mulyasari', 'Neglasari', 'Sinarlaut', 'Sukamanah', 'Tanjungsari', 'Wanasari', 'Wangunjaya'],
+    totalAset: 189, nilai: 76
+  },
+  'k23': {
+    id: 'k23', kode: '32.03.23', name: 'Cidaun',
+    lat: -7.2345, lng: 107.1890,
+    kelurahan: [],
+    desa: ['Cibuluh', 'Cidamar', 'Cimaragang', 'Cisalak', 'Gelarpawitan', 'Gelarwangi', 'Jayapura', 'Karangwangi', 'Karyabakti', 'Kertajadi', 'Mekarjaya', 'Neglasari', 'Puncakbaru', 'Sukapura'],
+    totalAset: 178, nilai: 72
+  },
+  'k24': {
+    id: 'k24', kode: '32.03.24', name: 'Naringgul',
+    lat: -7.3234, lng: 107.0678,
+    kelurahan: [],
+    desa: ['Balegede', 'Cinerang', 'Malati', 'Margasari', 'Mekarsari', 'Naringgul', 'Sukabakti', 'Sukamulya', 'Wanasari', 'Wangunjaya', 'Wangunsari'],
+    totalAset: 156, nilai: 63
+  },
+  'k25': {
+    id: 'k25', kode: '32.03.25', name: 'Campaka Mulya',
+    lat: -7.2789, lng: 107.1123,
+    kelurahan: [],
+    desa: ['Campakamulya', 'Campakawarna', 'Cibanggala', 'Sukasirna', 'Sukabungah'],
+    totalAset: 134, nilai: 54
+  },
+  'k26': {
+    id: 'k26', kode: '32.03.26', name: 'Cikadu',
+    lat: -7.2123, lng: 107.1567,
+    kelurahan: [],
+    desa: ['Cikadu', 'Cisaranten', 'Kalapanunggal', 'Mekarjaya', 'Mekarlaksana', 'Mekarwangi', 'Padaluyu', 'Sukaluyu', 'Sukamanah', 'Sukamulya'],
+    totalAset: 165, nilai: 67
+  },
+  'k27': {
+    id: 'k27', kode: '32.03.27', name: 'Gekbrong',
+    lat: -6.9789, lng: 107.0890,
+    kelurahan: [],
+    desa: ['Bangbayang', 'Cikahuripan', 'Cikancana', 'Cintaasih', 'Gekbrong', 'Kebonpeuteuy', 'Songgom', 'Sukaratu'],
+    totalAset: 267, nilai: 108
+  },
+  'k28': {
+    id: 'k28', kode: '32.03.28', name: 'Cipanas',
+    lat: -6.7456, lng: 107.1234,
+    kelurahan: [],
+    desa: ['Batulawang', 'Ciloto', 'Cimacan', 'Cipanas', 'Palasari', 'Sindangjaya', 'Sindanglaya'],
+    totalAset: 445, nilai: 175
+  },
+  'k29': {
+    id: 'k29', kode: '32.03.29', name: 'Cijati',
+    lat: -7.1678, lng: 107.0789,
+    kelurahan: [],
+    desa: ['Bojonglarang', 'Caringin', 'Cibodas', 'Cijati', 'Padaasih', 'Parakantugu', 'Sinarbakti', 'Sukaluyu', 'Sukamahi', 'Sukamaju'],
+    totalAset: 187, nilai: 76
+  },
+  'k30': {
+    id: 'k30', kode: '32.03.30', name: 'Leles',
+    lat: -7.2890, lng: 107.0345,
+    kelurahan: [],
+    desa: ['Karyamukti', 'Mandalawangi', 'Nagasari', 'Puncakwangi', 'Purabaya', 'Pusakasari', 'Sindangsari', 'Sirnasari', 'Sukajaya', 'Sukamulya', 'Sukasirna', 'Walahir'],
+    totalAset: 264, nilai: 107
+  },
+  'k31': {
+    id: 'k31', kode: '32.03.31', name: 'Haurwangi',
+    lat: -6.9567, lng: 107.0567,
+    kelurahan: [],
+    desa: ['Cihea', 'Cipeuyeum', 'Haurwangi', 'Kertamukti', 'Kertasari', 'Mekarwangi', 'Ramasari', 'Sukatani'],
+    totalAset: 234, nilai: 95
+  },
+  'k32': {
+    id: 'k32', kode: '32.03.32', name: 'Pasirkuda',
+    lat: -7.2456, lng: 107.2123,
+    kelurahan: [],
+    desa: ['Girijaya', 'Girimukti', 'Kalibaru', 'Karangjaya', 'Kubang', 'Mekarmulya', 'Padamulya', 'Pusakajaya', 'Simpang'],
+    totalAset: 143, nilai: 58
   }
 };
 
-let map;
-let markers = [];
-let currentKec = null;
-let currentDesa = null;
+const DATA = { kecamatan: Object.values(KECAMATAN_DATA) };
+
+const ASET_TEMPLATES = {
+  kantor: { nama: 'Kantor Desa', kode: 'KDS', kategori: 'Bangunan', nilai: 650000000, tahun: 2017, status: 'Baik' },
+  tanah: { nama: 'Tanah Milik Desa', kode: 'TNH', kategori: 'Tanah', nilai: 420000000, tahun: 2015, status: 'Baik' },
+  motor: { nama: 'Kendaraan Dinas Roda 2', kode: 'KDR', kategori: 'Kendaraan', nilai: 19500000, tahun: 2020, status: 'Baik' },
+  drainase: { nama: 'Saluran Drainase', kode: 'INF', kategori: 'Infrastruktur', nilai: 215000000, tahun: 2018, status: 'Rusak' },
+  pos: { nama: 'Pos Kamling', kode: 'BNG', kategori: 'Bangunan', nilai: 28000000, tahun: 2019, status: 'Baik' },
+  bengkok: { nama: 'Tanah Eks Bengkok', kode: 'TNH', kategori: 'Tanah', nilai: 875000000, tahun: 2015, status: 'Baik' },
+  irigasi: { nama: 'Saluran Irigasi', kode: 'INF', kategori: 'Infrastruktur', nilai: 320000000, tahun: 2017, status: 'Rusak' },
+  balai: { nama: 'Balai Pertemuan Warga', kode: 'BNG', kategori: 'Bangunan', nilai: 185000000, tahun: 2016, status: 'Baik' },
+  komputer: { nama: 'Komputer Sekretariat', kode: 'PRL', kategori: 'Peralatan', nilai: 8500000, tahun: 2020, status: 'Baik' },
+  jalan: { nama: 'Jalan Lingkungan', kode: 'INF', kategori: 'Infrastruktur', nilai: 450000000, tahun: 2019, status: 'Rusak' },
+  ambulans: { nama: 'Ambulans Desa', kode: 'KDR', kategori: 'Kendaraan', nilai: 185000000, tahun: 2022, status: 'Baik' },
+  paud: { nama: 'PAUD', kode: 'BNG', kategori: 'Bangunan', nilai: 220000000, tahun: 2019, status: 'Baik' },
+  posyandu: { nama: 'Posyandu', kode: 'BNG', kategori: 'Bangunan', nilai: 145000000, tahun: 2018, status: 'Rusak' }
+};
+
+let map, markers = [], boundaryLayer = null;
+let currentKec = null, currentDesa = null;
+let allAsetData = [];
+let chartInstances = {};
 
 function getColor(totalAset) {
   if (totalAset > 500) return '#0f4a28';
@@ -662,7 +962,6 @@ function getColor(totalAset) {
   if (totalAset > 150) return '#2d9e5f';
   return '#a8dfc0';
 }
-
 function getRadius(totalAset) {
   if (totalAset > 500) return 14;
   if (totalAset > 300) return 12;
@@ -670,75 +969,182 @@ function getRadius(totalAset) {
   return 8;
 }
 
-function initMap() {
-  // Pusat Kabupaten Cianjur
-  map = L.map('map').setView([-6.95, 107.15], 10);
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+function showPage(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + pageName).classList.add('active');
+  document.getElementById('btn-' + pageName).classList.add('active');
 
-  // Layer peta OpenStreetMap
+  if (pageName === 'statistik') setTimeout(renderStatistik, 100);
+  if (pageName === 'laporan') setTimeout(renderLaporan, 100);
+  if (pageName === 'aspirasi') setTimeout(renderAspirasiList, 100);
+}
+
+// ============================================================
+// MAP & BOUNDARY
+// ============================================================
+function initMap() {
+  map = L.map('map').setView([-7.05, 107.15], 10);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18
+    attribution: '© OpenStreetMap', maxZoom: 18
   }).addTo(map);
 
-  // Tambahkan marker untuk setiap kecamatan
+  // Load Cianjur boundary from OSM Overpass API
+  loadBoundary();
+
+  // Add markers
   DATA.kecamatan.forEach(kec => {
-    const color = getColor(kec.totalAset);
-    const radius = getRadius(kec.totalAset);
-    
-    const marker = L.circleMarker([kec.lat, kec.lng], {
-      radius: radius,
-      fillColor: color,
-      color: '#fff',
-      weight: 2,
-      opacity: 1,
-      fillOpacity: 0.85
+    const m = L.circleMarker([kec.lat, kec.lng], {
+      radius: getRadius(kec.totalAset),
+      fillColor: getColor(kec.totalAset),
+      color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
     }).addTo(map);
-
-    // Popup
-    marker.bindPopup(`
-      <div class="popup-title">Kec. ${kec.name}</div>
-      <div class="popup-info">${kec.desa} desa · ${kec.totalAset} aset · Rp ${kec.nilai}M</div>
-      <button class="popup-btn" onclick="selectKecFromMap('${kec.id}')">Lihat Detail</button>
-    `);
-
-    // Hover tooltip
-    marker.bindTooltip(`<<b>${kec.name}</b><br>${kec.totalAset} aset`, {
-      direction: 'top',
-      offset: [0, -10]
-    });
-
-    marker.on('click', () => selectKec(kec.id));
-    markers.push({ id: kec.id, marker });
+    m.bindPopup(`<div class="popup-title">Kec. ${kec.name}</div><div class="popup-info">${kec.desa.length + kec.kelurahan.length} desa/kel · ${kec.totalAset} aset · Rp ${kec.nilai}M</div><button class="popup-btn" onclick="selectKecFromMap('${kec.id}')">Lihat Detail</button>`);
+    m.bindTooltip(`<b>${kec.name}</b><br>${kec.totalAset} aset`, { direction: 'top', offset: [0, -10] });
+    m.on('click', () => selectKec(kec.id));
+    markers.push({ id: kec.id, marker: m });
   });
 }
 
-function selectKecFromMap(id) {
-  selectKec(id);
-  map.closePopup();
+function loadBoundary() {
+  // Overpass API query for Cianjur boundary (relation 14918117)
+  const overpassQuery = `[out:json];relation(14918117);out geom;`;
+  const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(overpassQuery);
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      if (data.elements && data.elements[0]) {
+        const geojson = osmToGeoJSON(data.elements[0]);
+        boundaryLayer = L.geoJSON(geojson, {
+          style: {
+            color: '#1a6b3c',
+            weight: 3,
+            fillColor: '#1a6b3c',
+            fillOpacity: 0.08,
+            dashArray: '5, 5'
+          }
+        }).addTo(map);
+        map.fitBounds(boundaryLayer.getBounds(), { padding: [20, 20] });
+      }
+    })
+    .catch(err => {
+      console.log('Boundary load failed, using fallback:', err);
+      // Fallback: simple rectangle approximation
+      <!-- const bounds = [[-6.60, 106.77], [-7.51, 107.48]]; -->
+      L.rectangle(bounds, { 
+        color: '#1a6b3c', weight: 2, fillColor: '#1a6b3c', fillOpacity: 0.05, dashArray: '5, 5'
+      }).addTo(map);
+    });
 }
 
+function osmToGeoJSON(element) {
+  // Convert OSM relation to GeoJSON
+  const coords = [];
+  if (element.members) {
+    element.members.forEach(member => {
+      if (member.type === 'way' && member.geometry) {
+        const wayCoords = member.geometry.map(p => [p.lat, p.lon]);
+        coords.push(wayCoords);
+      }
+    });
+  }
+  return {
+    type: 'Polygon',
+    coordinates: coords.length > 0 ? [coords[0]] : []
+  };
+}
+
+function selectKecFromMap(id) { selectKec(id); map.closePopup(); }
+
 function renderKecamatanList() {
-  const list = document.getElementById('kecamatanList');
-  list.innerHTML = DATA.kecamatan.map(k => `
+  document.getElementById('kecamatanList').innerHTML = DATA.kecamatan.map(k => `
     <div class="list-item" onclick="selectKec('${k.id}')" id="li_${k.id}">
-      <div class="list-icon">🏘️</div>
-      <div class="list-info">
-        <div class="list-name">${k.name}</div>
-        <div class="list-meta">${k.desa} desa · ${k.totalAset} aset</div>
-      </div>
+      <div class="list-icon"><i class="fas fa-city"></i></div>
+      <div class="list-info"><div class="list-name">${k.name}</div><div class="list-meta">${k.desa.length + k.kelurahan.length} desa/kel · ${k.totalAset} aset</div></div>
       <div class="list-badge">${k.totalAset}</div>
-      <div class="list-arrow">›</div>
+      <div class="list-arrow"><i class="fas fa-chevron-right"></i></div>
     </div>
   `).join('');
 }
 
+// ============================================================
+// DESA DATA - FIXED
+// ============================================================
+function getDesaData(kecId) {
+  const kec = KECAMATAN_DATA[kecId];
+  if (!kec) {
+    console.error('Kecamatan not found:', kecId);
+    return [];
+  }
+
+  const allDesa = [];
+
+  // Kelurahan
+  kec.kelurahan.forEach((name, i) => {
+    const aset = Math.floor(30 + Math.random() * 40);
+    allDesa.push({
+      id: 'kl' + (i + 1),
+      name: name,
+      type: 'Kelurahan',
+      aset: aset,
+      nilai: +(aset * 0.42 + Math.random() * 3).toFixed(1)
+    });
+  });
+
+  // Desa
+  kec.desa.forEach((name, i) => {
+    const aset = Math.floor(20 + Math.random() * 50);
+    allDesa.push({
+      id: 'd' + (i + 1),
+      name: name,
+      type: 'Desa',
+      aset: aset,
+      nilai: +(aset * 0.37 + Math.random() * 2).toFixed(1)
+    });
+  });
+
+  return allDesa;
+}
+
+function generateAsetForDesa(desaId, kecId) {
+  const templates = Object.values(ASET_TEMPLATES);
+  const count = Math.floor(5 + Math.random() * 6);
+  const result = [];
+
+  for (let i = 0; i < count; i++) {
+    const tpl = templates[i % templates.length];
+    const multiplier = 0.8 + Math.random() * 0.4;
+    const newNilai = Math.floor(tpl.nilai * multiplier);
+
+    result.push({
+      nama: tpl.nama + (i > 0 ? ' ' + (i + 1) : ''),
+      kode: tpl.kode + '-' + String(i + 1).padStart(3, '0'),
+      kategori: tpl.kategori,
+      nilai: 'Rp ' + newNilai.toLocaleString('id-ID'),
+      nilaiRaw: newNilai,
+      tahun: tpl.tahun + Math.floor(Math.random() * 4),
+      status: Math.random() > 0.7 ? 'Rusak' : 'Baik'
+    });
+  }
+
+  return result;
+}
+
 function selectKec(id) {
-  currentKec = DATA.kecamatan.find(k => k.id === id);
-  if (!currentKec) return;
+  currentKec = KECAMATAN_DATA[id];
+  if (!currentKec) {
+    console.error('Kecamatan not found:', id);
+    return;
+  }
 
   // Highlight marker
   markers.forEach(m => {
-    const kec = DATA.kecamatan.find(k => k.id === m.id);
+    const kec = KECAMATAN_DATA[m.id];
     m.marker.setStyle({
       fillColor: m.id === id ? '#c8930a' : getColor(kec.totalAset),
       fillOpacity: m.id === id ? 1 : 0.85,
@@ -746,7 +1152,6 @@ function selectKec(id) {
     });
   });
 
-  // Zoom ke kecamatan
   map.flyTo([currentKec.lat, currentKec.lng], 13, { duration: 1.5 });
 
   // Show kec detail view
@@ -756,60 +1161,42 @@ function selectKec(id) {
 
   document.getElementById('kecBreadcrumb').textContent = currentKec.name;
   document.getElementById('kecDetailName').textContent = 'Kec. ' + currentKec.name;
-  document.getElementById('kecDetailMeta').textContent = 'Kabupaten Cianjur · ' + currentKec.desa + ' desa/kelurahan';
+  document.getElementById('kecDetailMeta').textContent = 'Kabupaten Cianjur · ' + (currentKec.desa.length + currentKec.kelurahan.length) + ' desa/kelurahan';
   document.getElementById('kecTotalAset').textContent = currentKec.totalAset.toLocaleString();
   document.getElementById('kecTotalNilai').textContent = currentKec.nilai;
-  document.getElementById('kecJmlDesa').textContent = currentKec.desa;
+  document.getElementById('kecJmlDesa').textContent = currentKec.desa.length + currentKec.kelurahan.length;
 
-  // Render desa list
-  const desaData = DATA.desa[id] || generateDesa(currentKec);
+  // Render desa list - DYNAMIS dari data asli
+  const desaData = getDesaData(id);
+  console.log('Desa data for', id, ':', desaData.length, 'items');
+
   const desaList = document.getElementById('desaList');
-  desaList.innerHTML = desaData.map(d => `
-    <div class="list-item" onclick="selectDesa('${d.id}','${id}')">
-      <div class="list-icon">🏡</div>
-      <div class="list-info">
-        <div class="list-name">${d.name}</div>
-        <div class="list-meta">${d.aset} aset · Rp ${d.nilai.toFixed(1)}M</div>
+  if (desaData.length === 0) {
+    desaList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--teks-3);">Tidak ada data desa</div>';
+  } else {
+    desaList.innerHTML = desaData.map(d => `
+      <div class="list-item" onclick="selectDesa('${d.id}','${id}')">
+        <div class="list-icon"><i class="fas fa-${d.type === 'Kelurahan' ? 'building' : 'home'}"></i></div>
+        <div class="list-info">
+          <div class="list-name">${d.name}</div>
+          <div class="list-meta">${d.type} · ${d.aset} aset · Rp ${d.nilai.toFixed(1)}M</div>
+        </div>
+        <div class="list-badge">${d.aset}</div>
+        <div class="list-arrow"><i class="fas fa-chevron-right"></i></div>
       </div>
-      <div class="list-badge">${d.aset}</div>
-      <div class="list-arrow">›</div>
-    </div>
-  `).join('');
-}
-
-function generateDesa(kec) {
-  const desaNames = ['Sukajaya','Cikalong','Mekarsari','Sukaresmi','Cihaur','Margaluyu',
-    'Sukamaju','Ciasem','Neglasari','Sukatani','Ciherang','Sindangratu','Sukabakti','Padasuka'];
-  const result = [];
-  for(let i=0; i<<kec.desa; i++) {
-    const aset = Math.floor(20 + Math.random()*60);
-    result.push({
-      id: 'd'+(i+1),
-      name: desaNames[i % desaNames.length] + (i >= desaNames.length ? ' '+Math.ceil((i-desaNames.length+1)/desaNames.length) : ''),
-      aset: aset,
-      nilai: +(aset * 0.37 + Math.random()*2).toFixed(1)
-    });
+    `).join('');
   }
-  return result;
-}
-
-function getDefaultAset(desaId, kecId) {
-  const key = desaId + '_' + kecId;
-  if (DATA.aset[key]) return DATA.aset[key];
-  return [
-    {nama:'Kantor Desa', kode:'KDS-001', kategori:'Bangunan', nilai:'Rp 650.000.000', tahun:2017, status:'Baik'},
-    {nama:'Tanah Milik Desa', kode:'TNH-001', kategori:'Tanah', nilai:'Rp 420.000.000', tahun:2015, status:'Baik'},
-    {nama:'Kendaraan Dinas Roda 2', kode:'KDR-001', kategori:'Kendaraan', nilai:'Rp 19.500.000', tahun:2020, status:'Baik'},
-    {nama:'Saluran Drainase', kode:'INF-001', kategori:'Infrastruktur', nilai:'Rp 215.000.000', tahun:2018, status:'Rusak'},
-    {nama:'Pos Kamling', kode:'BNG-001', kategori:'Bangunan', nilai:'Rp 28.000.000', tahun:2019, status:'Baik'},
-  ];
 }
 
 function selectDesa(desaId, kecId) {
-  const kec = DATA.kecamatan.find(k => k.id === kecId);
-  const desaList = DATA.desa[kecId] || generateDesa(kec);
-  const desa = desaList.find(d => d.id === desaId);
-  if (!desa) return;
+  const kec = KECAMATAN_DATA[kecId];
+  const desaData = getDesaData(kecId);
+  const desa = desaData.find(d => d.id === desaId);
+
+  if (!desa) {
+    console.error('Desa not found:', desaId, 'in kec:', kecId);
+    return;
+  }
 
   currentDesa = desa;
 
@@ -819,102 +1206,313 @@ function selectDesa(desaId, kecId) {
 
   document.getElementById('kecBreadcrumb2').textContent = kec ? kec.name : '';
   document.getElementById('desaBreadcrumb').textContent = desa.name;
-  document.getElementById('desaDetailName').textContent = 'Desa ' + desa.name;
-  document.getElementById('desaDetailMeta').textContent = 'Kec. '+(kec?kec.name:'') + ' · '+desa.aset+' aset tercatat';
+  document.getElementById('desaDetailName').textContent = desa.type + ' ' + desa.name;
+  document.getElementById('desaDetailMeta').textContent = 'Kec. ' + (kec ? kec.name : '') + ' · ' + desa.aset + ' aset tercatat';
 
-  const asetData = getDefaultAset(desaId, kecId);
-  const totalNilai = asetData.reduce((s,a) => {
-    const n = parseInt(a.nilai.replace(/[^0-9]/g,''));
-    return s + n;
-  }, 0);
-
-  const fmtNilai = 'Rp ' + (totalNilai/1e9).toFixed(2) + ' M';
+  const asetData = generateAsetForDesa(desaId, kecId);
+  const totalNilai = asetData.reduce((s, a) => s + a.nilaiRaw, 0);
+  const fmtNilai = 'Rp ' + (totalNilai / 1e9).toFixed(2) + ' M';
 
   document.getElementById('asetTableContainer').innerHTML = `
-    <table class="aset-table" style="width:100%">
-      <thead>
-        <tr>
-          <th>Nama Aset</th>
-          <th>Kategori</th>
-          <th>Tahun</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${asetData.map(a => `
-          <tr>
-            <td>
-              <div style="font-size:12px;font-weight:500;color:var(--teks)">${a.nama}</div>
-              <div style="font-size:10px;color:var(--teks-3)">${a.kode} · ${a.nilai}</div>
-            </td>
-            <td><span style="background:#e8f0ff;color:#2547b5;border-radius:6px;padding:2px 6px;font-size:10px">${a.kategori}</span></td>
-            <td style="color:var(--teks-2)">${a.tahun}</td>
-            <td><span class="status-badge ${a.status==='Baik'?'status-baik':'status-rusak'}">${a.status}</span></td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-    <div class="total-nilai">
-      <span class="total-label">Total Nilai Aset Desa ${desa.name}</span>
-      <span class="total-amount">${fmtNilai}</span>
-    </div>
+    <table class="aset-table" style="width:100%"><thead><tr><th>Nama Aset</th><th>Kategori</th><th>Tahun</th><th>Status</th></tr></thead><tbody>
+    ${asetData.map(a => `<tr><td><div style="font-size:12px;font-weight:500;color:var(--teks)">${a.nama}</div><div style="font-size:10px;color:var(--teks-3)">${a.kode} · ${a.nilai}</div></td><td><span style="background:#e8f0ff;color:#2547b5;border-radius:6px;padding:2px 6px;font-size:10px">${a.kategori}</span></td><td style="color:var(--teks-2)">${a.tahun}</td><td><span class="status-badge ${a.status === 'Baik' ? 'status-baik' : 'status-rusak'}">${a.status}</span></td></tr>`).join('')}
+    </tbody></table>
+    <div class="total-nilai"><span class="total-label">Total Nilai Aset ${desa.type} ${desa.name}</span><span class="total-amount">${fmtNilai}</span></div>
     <div style="margin-top:8px; display:flex; gap:6px;">
-      <div style="flex:1; background:var(--hijau-pale); border-radius:8px; padding:8px; text-align:center;">
-        <div style="font-size:16px;font-weight:700;color:var(--hijau)">${asetData.filter(a=>a.status==='Baik').length}</div>
-        <div style="font-size:10px;color:var(--teks-3)">Kondisi Baik</div>
-      </div>
-      <div style="flex:1; background:#fdeaea; border-radius:8px; padding:8px; text-align:center;">
-        <div style="font-size:16px;font-weight:700;color:#c0392b">${asetData.filter(a=>a.status==='Rusak').length}</div>
-        <div style="font-size:10px;color:var(--teks-3)">Perlu Perbaikan</div>
-      </div>
-      <div style="flex:1; background:var(--emas-pale); border-radius:8px; padding:8px; text-align:center;">
-        <div style="font-size:16px;font-weight:700;color:var(--emas)">${asetData.length}</div>
-        <div style="font-size:10px;color:var(--teks-3)">Total Aset</div>
-      </div>
+      <div style="flex:1; background:var(--hijau-pale); border-radius:8px; padding:8px; text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--hijau)">${asetData.filter(a => a.status === 'Baik').length}</div><div style="font-size:10px;color:var(--teks-3)">Kondisi Baik</div></div>
+      <div style="flex:1; background:#fdeaea; border-radius:8px; padding:8px; text-align:center;"><div style="font-size:16px;font-weight:700;color:#c0392b">${asetData.filter(a => a.status === 'Rusak').length}</div><div style="font-size:10px;color:var(--teks-3)">Perlu Perbaikan</div></div>
+      <div style="flex:1; background:var(--emas-pale); border-radius:8px; padding:8px; text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--emas)">${asetData.length}</div><div style="font-size:10px;color:var(--teks-3)">Total Aset</div></div>
     </div>
   `;
 }
 
 function goHome() {
-  currentKec = null;
-  currentDesa = null;
-
+  currentKec = null; currentDesa = null;
   document.getElementById('viewKecamatan').style.display = 'flex';
   document.getElementById('viewKecDetail').style.display = 'none';
   document.getElementById('viewDesaDetail').style.display = 'none';
-
-  // Reset markers
   markers.forEach(m => {
-    const kec = DATA.kecamatan.find(k => k.id === m.id);
-    m.marker.setStyle({
-      fillColor: getColor(kec.totalAset),
-      fillOpacity: 0.85,
-      radius: getRadius(kec.totalAset)
-    });
+    const kec = KECAMATAN_DATA[m.id];
+    m.marker.setStyle({ fillColor: getColor(kec.totalAset), fillOpacity: 0.85, radius: getRadius(kec.totalAset) });
+  });
+  map.flyTo([-7.05, 107.15], 10, { duration: 1.5 });
+}
+function goKec() { if (!currentKec) return goHome(); selectKec(currentKec.id); }
+
+// ============================================================
+// STATISTIK
+// ============================================================
+function renderStatistik() {
+  const kecSorted = [...DATA.kecamatan].sort((a, b) => b.totalAset - a.totalAset);
+  const top10 = kecSorted.slice(0, 10);
+
+  // Bar Chart
+  const ctxBar = document.getElementById('chartBar');
+  if (chartInstances.bar) chartInstances.bar.destroy();
+  chartInstances.bar = new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: top10.map(k => k.name),
+      datasets: [{
+        label: 'Jumlah Aset',
+        data: top10.map(k => k.totalAset),
+        backgroundColor: top10.map(k => getColor(k.totalAset)),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } }
+    }
   });
 
-  // Reset zoom
-  map.flyTo([-6.95, 107.15], 10, { duration: 1.5 });
+  // Pie Chart
+  const ctxPie = document.getElementById('chartPie');
+  if (chartInstances.pie) chartInstances.pie.destroy();
+  chartInstances.pie = new Chart(ctxPie, {
+    type: 'pie',
+    data: {
+      labels: ['Bangunan', 'Tanah', 'Kendaraan', 'Infrastruktur', 'Peralatan'],
+      datasets: [{
+        data: [35, 25, 15, 18, 7],
+        backgroundColor: ['#1a6b3c', '#2d9e5f', '#c8930a', '#2547b5', '#888'],
+        borderWidth: 0
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Line Chart
+  const ctxLine = document.getElementById('chartLine');
+  if (chartInstances.line) chartInstances.line.destroy();
+  chartInstances.line = new Chart(ctxLine, {
+    type: 'line',
+    data: {
+      labels: top10.map(k => k.name),
+      datasets: [{
+        label: 'Nilai Aset (Miliar)',
+        data: top10.map(k => k.nilai),
+        borderColor: '#c8930a',
+        backgroundColor: 'rgba(200,147,10,0.1)',
+        fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#c8930a'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } }
+    }
+  });
+
+  // Doughnut
+  const ctxDoughnut = document.getElementById('chartDoughnut');
+  if (chartInstances.doughnut) chartInstances.doughnut.destroy();
+  chartInstances.doughnut = new Chart(ctxDoughnut, {
+    type: 'doughnut',
+    data: {
+      labels: ['Baik', 'Rusak'],
+      datasets: [{
+        data: [85, 15],
+        backgroundColor: ['#1a6b3c', '#c0392b'],
+        borderWidth: 0
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '60%' }
+  });
+
+  // Top Table
+  document.getElementById('topKecBody').innerHTML = kecSorted.slice(0, 10).map((k, i) => {
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    const totalDesa = k.desa.length + k.kelurahan.length;
+    return `<tr>
+      <td><div class="rank-badge ${rankClass}">${i + 1}</div></td>
+      <td><b>${k.name}</b></td>
+      <td>${totalDesa}</td>
+      <td>${k.totalAset.toLocaleString()}</td>
+      <td>Rp ${k.nilai}M</td>
+      <td>${Math.round(k.totalAset / totalDesa)}</td>
+    </tr>`;
+  }).join('');
 }
 
-function goKec() {
-  if (!currentKec) return goHome();
-  selectKec(currentKec.id);
+// ============================================================
+// LAPORAN
+// ============================================================
+function generateAllAsetData() {
+  if (allAsetData.length > 0) return allAsetData;
+  const data = [];
+  Object.values(KECAMATAN_DATA).forEach(kec => {
+    const desaList = getDesaData(kec.id);
+    desaList.forEach(desa => {
+      const asetList = generateAsetForDesa(desa.id, kec.id);
+      asetList.forEach(aset => {
+        data.push({ ...aset, kecamatan: kec.name, desa: desa.name, kecId: kec.id, desaId: desa.id });
+      });
+    });
+  });
+  allAsetData = data;
+  return data;
 }
 
-function searchLocation() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
-  const kec = DATA.kecamatan.find(k => k.name.toLowerCase().includes(query));
-  if (kec) {
-    selectKec(kec.id);
-  } else {
-    alert('Kecamatan tidak ditemukan');
+function renderLaporan() {
+  const filterKec = document.getElementById('filterKec');
+  if (filterKec.options.length <= 1) {
+    DATA.kecamatan.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k.name;
+      opt.textContent = k.name;
+      filterKec.appendChild(opt);
+    });
   }
+  filterLaporan();
 }
 
-// Init
-initMap();
-renderKecamatanList();
+function filterLaporan() {
+  const kecFilter = document.getElementById('filterKec').value;
+  const statusFilter = document.getElementById('filterStatus').value;
+  const kategoriFilter = document.getElementById('filterKategori').value;
+  const searchFilter = document.getElementById('filterSearch').value.toLowerCase();
+
+  let data = generateAllAsetData();
+  if (kecFilter) data = data.filter(a => a.kecamatan === kecFilter);
+  if (statusFilter) data = data.filter(a => a.status === statusFilter);
+  if (kategoriFilter) data = data.filter(a => a.kategori === kategoriFilter);
+  if (searchFilter) data = data.filter(a => a.nama.toLowerCase().includes(searchFilter));
+
+  document.getElementById('laporanBody').innerHTML = data.slice(0, 100).map((a, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><b>${a.nama}</b></td>
+      <td>${a.kode}</td>
+      <td><span style="background:#e8f0ff;color:#2547b5;border-radius:6px;padding:2px 6px;font-size:10px">${a.kategori}</span></td>
+      <td>${a.kecamatan}</td>
+      <td>${a.desa}</td>
+      <td>${a.tahun}</td>
+      <td>${a.nilai}</td>
+      <td><span class="status-badge ${a.status === 'Baik' ? 'status-baik' : 'status-rusak'}">${a.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function exportToJSON() {
+  const data = generateAllAsetData();
+  const jsonStr = JSON.stringify(data, null, 2);
+  document.getElementById('jsonContent').textContent = jsonStr;
+  document.getElementById('jsonViewer').style.display = 'block';
+
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'laporan_aset_cianjur.json';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showToast('Data berhasil di-export ke JSON!');
+}
+
+// ============================================================
+// ASPIRASI
+// ============================================================
+function getAspirasiData() {
+  try {
+    return JSON.parse(localStorage.getItem('sibkat_aspirasi') || '[]');
+  } catch (e) { return []; }
+}
+function saveAspirasiData(data) {
+  localStorage.setItem('sibkat_aspirasi', JSON.stringify(data));
+}
+
+function initAspirasiForm() {
+  const selectKec = document.getElementById('aspKec');
+  DATA.kecamatan.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k.id;
+    opt.textContent = k.name;
+    selectKec.appendChild(opt);
+  });
+}
+
+function updateDesaSelect() {
+  const kecId = document.getElementById('aspKec').value;
+  const selectDesa = document.getElementById('aspDesa');
+  selectDesa.innerHTML = '<option value="">Pilih Desa/Kelurahan</option>';
+  if (!kecId) return;
+  const desaList = getDesaData(kecId);
+  desaList.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.name;
+    opt.textContent = d.type + ' ' + d.name;
+    selectDesa.appendChild(opt);
+  });
+}
+
+function submitAspirasi(e) {
+  e.preventDefault();
+  const kecId = document.getElementById('aspKec').value;
+  const aspirasi = {
+    id: Date.now(),
+    nama: document.getElementById('aspNama').value,
+    kontak: document.getElementById('aspKontak').value,
+    kecamatan: KECAMATAN_DATA[kecId]?.name || '',
+    desa: document.getElementById('aspDesa').value,
+    jenis: document.getElementById('aspJenis').value,
+    judul: document.getElementById('aspJudul').value,
+    detail: document.getElementById('aspDetail').value,
+    status: 'Pending',
+    tanggal: new Date().toLocaleString('id-ID'),
+    timestamp: Date.now()
+  };
+
+  const data = getAspirasiData();
+  data.unshift(aspirasi);
+  saveAspirasiData(data);
+
+  document.getElementById('aspirasiForm').reset();
+  renderAspirasiList();
+  showToast('Aspirasi berhasil dikirim dan disimpan!');
+}
+
+function renderAspirasiList() {
+  const data = getAspirasiData();
+  const container = document.getElementById('aspirasiList');
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="empty-state">Belum ada aspirasi yang dikirim.<br>Kirimkan aspirasi pertama Anda!</div>';
+  } else {
+    container.innerHTML = data.map(a => `
+      <div class="aspirasi-item">
+        <div class="aspirasi-item-header">
+          <div class="aspirasi-item-title">${a.judul}</div>
+          <div class="aspirasi-item-status status-${a.status.toLowerCase()}">${a.status}</div>
+        </div>
+        <div class="aspirasi-item-meta"><i class="fas fa-user"></i> ${a.nama} · <i class="fas fa-map-marker-alt"></i> ${a.kecamatan}, ${a.desa} · <i class="fas fa-calendar"></i> ${a.tanggal}</div>
+        <div class="aspirasi-item-meta"><i class="fas fa-tag"></i> ${a.jenis}</div>
+        <div class="aspirasi-item-desc">${a.detail}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('aspirasiJsonContent').textContent = JSON.stringify(data, null, 2);
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  initMap();
+  renderKecamatanList();
+  initAspirasiForm();
+  renderAspirasiList();
+});
 </script>
 
 </body>
